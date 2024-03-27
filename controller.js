@@ -4,7 +4,7 @@ const pool = require("./db");
 const createTables = async () => {
     try {
         const sql = fs.readFileSync('schema.sql', 'utf8');
-        await pool.query(sql);
+        await pool.query(sql);      // SQL sorguları pool.query() kullanılarak PostgreSQL veritabanında çalıştırılır.
         console.log('Tablolar oluşturuldu.');
     } catch (error) {
         console.error('Hata:', error);
@@ -20,7 +20,6 @@ const getAllStudent = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Kayıt Listeleme Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -32,7 +31,6 @@ const getStudentById = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Öğrenci Bulma Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -44,7 +42,6 @@ const createStudent = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Öğrenci Oluşturma Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -80,7 +77,6 @@ const deleteStudent = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Öğrenci Silme Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -93,7 +89,6 @@ const getAllBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Kayıt Listeleme Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -105,7 +100,6 @@ const getBolumById = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm Bulma Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 
@@ -119,7 +113,6 @@ const createBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm oluşturma sırasında bir hata oluştu.', error: err });
-    } finally {
     }
 };
 
@@ -156,7 +149,6 @@ const deleteBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm Silme Sırasında Hata Oluştu. Hata: ' + err });
-    } finally {
     }
 };
 

@@ -1,15 +1,16 @@
-const express = require('express');
-const pool = require("./db");
-const app = express();
-const controller = require('./controller');
-const port = 8000;
+const express = require('express'); // HTTP sunucusu oluşturma ve yönetme 
+const pool = require("./db");       // veritabanı işlemlerini gerçekleştirmek için kullanılacak bağlantıların yönetimi
+const app = express();              // Express uygulaması oluşturuluyor
+const controller = require('./controller');     // CRUD 
+const port = 8000;                  // Sunucunun dinleyeceği port
 
-app.use(express.json())
+app.use(express.json())             // gelen isteklerdeki JSON verilerini ayrıştırmak, req.body üzerinden erişilebilir hale getirir
 
-app.get('/', (req,res)=>{
+app.get('/', (req,res)=>{           // sunucunun çalışıp çalışmadığını test etmek için kök dizine yapılan istek
     res.send('Hello')
 })
 
+// uygulamada öğrenci ve bölüm kayıtlarını işlemek için HTTP isteklerini yönlendirir
 app.get('/students', controller.getAllStudent);
 app.get('/students/:id', controller.getStudentById);
 app.post('/students', controller.createStudent);
@@ -22,13 +23,13 @@ app.post('/department', controller.createBolum);
 app.patch('/department/:id', controller.updateBolum);
 app.delete('/department/:id', controller.deleteBolum);
 
-pool.connect()
+pool.connect()              // veritabanıyla bağlantı kuruldu
     .then(() => {
         console.log('Veritabanı bağlantısı kuruldu.');
 
-        controller.createTables();
+        controller.createTables();      // tabloların oluşturulması için createTables fonksiyonu çağrılır
 
-        app.listen(port, () => {
+        app.listen(port, () => {        // sunucu belirtilen portta dinlemeye başlar
             console.log(`Sunucu ${port} portunda çalışıyor.`);
         });
     })
