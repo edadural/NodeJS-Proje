@@ -18,7 +18,6 @@ app.delete('/students/:id', controller.deleteStudent);
 
 app.get('/Ogrenci_sayac/', controller.getStudentCount);
 
-
 app.get('/departments', controller.getAllBolum);
 app.get('/departments/:id', controller.getBolumById);
 app.post('/department', controller.createBolum);
