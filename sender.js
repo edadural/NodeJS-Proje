@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 
 require('dotenv').config();
 const period = process.env.period;
-console.log("preiyot:",period);
+console.log("periyot:",period);
 console.log("mail ",process.env.EMAIL_ADDRESS)
 
 const controller = require('./controller');
@@ -19,7 +19,7 @@ const fetchAllStudents=controller.fetchAllStudents;
 //         throw err;
 //     }
 // };
-// E-posta ayarları
+
 const transporter = nodemailer.createTransport({
     service: 'gmail', // Gmail kullanımı
     auth: {
@@ -43,8 +43,8 @@ const generateBackup = async () => {
 
   // E-posta hazırlama
   const emailOptions = {
-    from: 'cimen2001humeyra@gmail.com', // Gönderen e-posta adresi
-    to: process.env.EMAIL_ADDRESS ,//  Alıcı e-posta adresi
+    from: 'cimen2001humeyra@gmail.com', 
+    to: process.env.EMAIL_ADDRESS ,
     subject: `Haftalık Öğrenci Yedeği (${backupFileName})`,
     text: 'Herkese merhaba, bu e-posta ekte haftalık öğrenci yedek dosyasını içerir.',
     attachments: [
@@ -72,4 +72,3 @@ setInterval(generateBackup, 1000 * 60*period);
 
 generateBackup();
 
-module.exports = generateBackup;
