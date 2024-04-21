@@ -4,7 +4,7 @@ const pool = require("./db");
 const createTables = async () => {
     try {
         const sql = fs.readFileSync('schema.sql', 'utf8');
-        await pool.query(sql);      // SQL sorguları pool.query() kullanılarak PostgreSQL veritabanında çalıştırılır.
+        await pool.query(sql);
         console.log('Tablolar oluşturuldu.');
     } catch (error) {
         console.error('Hata:', error);
@@ -12,6 +12,16 @@ const createTables = async () => {
 };
 
 // STUDENT CONTROLLER
+// Öğrenci verilerini alma
+const fetchAllStudents = async () => {
+    try {
+        const result = await pool.query('SELECT * FROM Ogrenci');
+        return result.rows;
+    } catch (err) {
+        console.error('Hata:', err);
+        throw err;
+    }
+};
 
 const getAllStudent = async (req, res) => {
     try {
@@ -20,6 +30,7 @@ const getAllStudent = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Kayıt Listeleme Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
 };
 
@@ -31,19 +42,33 @@ const getStudentById = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Öğrenci Bulma Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
 };
-
+// const updaterCouter=async()=>{
+//   let counter=await fetchAllStudents();
+//   if(!counter){
+//       return false;
+//   }else{
+//       return counter.length;
+//   }  
+// }
 const createStudent = async (req, res) => {
     const { name, email, deptid } = req.body;
     try {
-        const result = await pool.query('INSERT INTO Ogrenci (name, email, deptid) VALUES ($1, $2, $3) RETURNING *', [name, email, deptid]);
-        return res.status(201).send({ status: true, message: 'Öğrenci oluşturuldu.', data: result.rows });
+      const result = await pool.query('INSERT INTO Ogrenci (name, email, deptid) VALUES ($1, $2, $3) RETURNING *', [name, email, deptid]);
+      
+      // Öğrenci oluşturulduktan sonra sayaç güncellendi
+      await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac + 1');
+  
+      return res.status(201).send({ status: true, message: 'Öğrenci oluşturuldu.', data: result.rows });
     } catch (err) {
-        console.error('Hata:', err);
-        return res.status(500).send({ status: false, message: 'Öğrenci Oluşturma Sırasında Hata Oluştu. Hata: ' + err });
+      console.error('Hata:', err);
+      return res.status(500).send({ status: false, message: 'Öğrenci Oluşturma Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
-};
+  };
+  
 
 const updateStudent = async (req, res) => {
     const id = req.params.id;
@@ -72,13 +97,30 @@ const updateStudent = async (req, res) => {
 const deleteStudent = async (req, res) => {
     const id = req.params.id;
     try {
-        await pool.query('DELETE FROM Ogrenci WHERE id = $1', [id]);
-        return res.status(200).send({ status: true, message: 'Öğrenci silindi.' });
+      await pool.query('DELETE FROM Ogrenci WHERE id = $1', [id]);
+  
+      // Öğrenci silindikten sonra sayaç güncellendi
+      await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac - 1');
+  
+      return res.status(200).send({ status: true, message: 'Öğrenci silindi.' });
+    } catch (err) {
+      console.error('Hata:', err);
+      return res.status(500).send({ status: false, message: 'Öğrenci Silme Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
+    }
+  };
+  
+const getStudentCount = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT sayac FROM Ogrenci_sayac');
+        const count = result.rows[0].sayac;
+        return res.status(200).send({ status: true, message: 'Öğrenci sayısı alındı.', data: count });
     } catch (err) {
         console.error('Hata:', err);
-        return res.status(500).send({ status: false, message: 'Öğrenci Silme Sırasında Hata Oluştu. Hata: ' + err });
+        return res.status(500).send({ status: false, message: 'Öğrenci Sayısı Alınırken Hata Oluştu. Hata: ' + err });
     }
 };
+
 
 // BOLUM CONTROLLER
 
@@ -89,6 +131,7 @@ const getAllBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Kayıt Listeleme Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
 };
 
@@ -100,6 +143,7 @@ const getBolumById = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm Bulma Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
 };
 
@@ -113,6 +157,7 @@ const createBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm oluşturma sırasında bir hata oluştu.', error: err });
+    } finally {
     }
 };
 
@@ -149,6 +194,7 @@ const deleteBolum = async (req, res) => {
     } catch (err) {
         console.error('Hata:', err);
         return res.status(500).send({ status: false, message: 'Bölüm Silme Sırasında Hata Oluştu. Hata: ' + err });
+    } finally {
     }
 };
 
@@ -163,5 +209,8 @@ module.exports = {
     getBolumById,
     createBolum,
     updateBolum,
-    deleteBolum
+    deleteBolum,
+    getStudentCount,
+    fetchAllStudents
+    
 };
