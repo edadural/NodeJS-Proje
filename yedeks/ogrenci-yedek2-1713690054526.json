@@ -1,0 +1,16 @@
+[
+  {
+    "id": 2,
+    "name": "asu",
+    "email": "asd@gmail.com",
+    "deptid": 112,
+    "counter": 0
+  },
+  {
+    "id": 3,
+    "name": "emine",
+    "email": "asd@gmail.com",
+    "deptid": 112,
+    "counter": 0
+  }
+]
