@@ -1,5 +1,7 @@
 const fs = require('fs');
 const pool = require("./db");
+const moment = require('moment');
+
 
 const createTables = async () => {
     try {
@@ -56,25 +58,32 @@ const getStudentById = async (req, res) => {
 const createStudent = async (req, res) => {
     const { name, email, deptid } = req.body;
     try {
-      const result = await pool.query('INSERT INTO Ogrenci (name, email, deptid) VALUES ($1, $2, $3) RETURNING *', [name, email, deptid]);
-      
-      // Öğrenci oluşturulduktan sonra sayaç güncellendi
-      await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac + 1');
-  
-      return res.status(201).send({ status: true, message: 'Öğrenci oluşturuldu.', data: result.rows });
+        const timestamp = now();
+        const result = await pool.query('INSERT INTO Ogrenci (name, email, deptid, created_at, updated_at) VALUES ($1, $2, $3, $4, $5) RETURNING *', [name, email, deptid, timestamp, timestamp]);
+
+        // Öğrenci oluşturulduktan sonra sayaç güncellendi
+        await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac + 1');
+        // Guncellendigi tarih eklenir.
+        await pool.query(`UPDATE Ogrenci_sayac SET updated_at = '${now()}'`);
+
+        return res.status(201).send({ status: true, message: 'Öğrenci oluşturuldu.', data: result.rows });
     } catch (err) {
-      console.error('Hata:', err);
-      return res.status(500).send({ status: false, message: 'Öğrenci Oluşturma Sırasında Hata Oluştu. Hata: ' + err });
+        console.error('Hata:', err);
+        return res.status(500).send({ status: false, message: 'Öğrenci Oluşturma Sırasında Hata Oluştu. Hata: ' + err });
     } finally {
     }
-  };
-  
+};
+
 
 const updateStudent = async (req, res) => {
     const id = req.params.id;
     const { name, email, deptid } = req.body;
 
     const updatedFields = [];
+    
+    req.body['updated_at'] = now();
+    updatedFields.push('updated_at')
+    
     if (name) updatedFields.push('name');
     if (email) updatedFields.push('email');
     if (deptid) updatedFields.push('deptid');
@@ -97,19 +106,20 @@ const updateStudent = async (req, res) => {
 const deleteStudent = async (req, res) => {
     const id = req.params.id;
     try {
-      await pool.query('DELETE FROM Ogrenci WHERE id = $1', [id]);
-  
-      // Öğrenci silindikten sonra sayaç güncellendi
-      await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac - 1');
-  
-      return res.status(200).send({ status: true, message: 'Öğrenci silindi.' });
+        await pool.query('DELETE FROM Ogrenci WHERE id = $1', [id]);
+
+        // Öğrenci silindikten sonra sayaç güncellendi
+        await pool.query('UPDATE Ogrenci_sayac SET sayac = sayac - 1');
+        await pool.query(`UPDATE Ogrenci_sayac SET updated_at = '${now()}'`);
+
+        return res.status(200).send({ status: true, message: 'Öğrenci silindi.' });
     } catch (err) {
-      console.error('Hata:', err);
-      return res.status(500).send({ status: false, message: 'Öğrenci Silme Sırasında Hata Oluştu. Hata: ' + err });
+        console.error('Hata:', err);
+        return res.status(500).send({ status: false, message: 'Öğrenci Silme Sırasında Hata Oluştu. Hata: ' + err });
     } finally {
     }
-  };
-  
+};
+
 const getStudentCount = async (req, res) => {
     try {
         const result = await pool.query('SELECT sayac FROM Ogrenci_sayac');
@@ -148,10 +158,10 @@ const getBolumById = async (req, res) => {
 };
 
 const createBolum = async (req, res) => {
-    const { name, dept_std_id } = req.body; 
+    const { name, dept_std_id } = req.body;
     try {
-
-        const result = await pool.query('INSERT INTO Bolum (name, dept_std_id) VALUES ($1, $2) RETURNING *', [name, dept_std_id]);
+        const timestamp = now()
+        const result = await pool.query('INSERT INTO Bolum (name, dept_std_id, created_at, updated_at) VALUES ($1, $2, $3, $4) RETURNING *', [name, dept_std_id, timestamp, timestamp]);
 
         return res.status(201).send({ status: true, message: 'Bölüm oluşturuldu.', data: result.rows });
     } catch (err) {
@@ -166,6 +176,10 @@ const updateBolum = async (req, res) => {
     const { name, dept_std_id } = req.body;
 
     const updatedFields = [];
+
+    req.body['updated_at'] = now();
+    updatedFields.push('updated_at')
+
     if (name) updatedFields.push('name');
     if (dept_std_id) updatedFields.push('dept_std_id');
 
@@ -198,6 +212,11 @@ const deleteBolum = async (req, res) => {
     }
 };
 
+
+function now() {
+    return moment().format();
+}
+
 module.exports = {
     createTables,
     getAllStudent,
@@ -212,5 +231,5 @@ module.exports = {
     deleteBolum,
     getStudentCount,
     fetchAllStudents
-    
+
 };
